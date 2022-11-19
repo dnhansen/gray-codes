@@ -1,0 +1,249 @@
+% Document setup
+\documentclass[article, a4paper, 11pt, oneside]{memoir}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[UKenglish]{babel}
+
+% Document info
+\newcommand\doctitle{Gray codes}
+\newcommand\docauthor{Danny Nygård Hansen}
+
+% Formatting and layout
+\usepackage[autostyle]{csquotes}
+\renewcommand{\mktextelp}{(\textellipsis\unkern)}
+\usepackage[final]{microtype}
+\usepackage{xcolor}
+\frenchspacing
+\usepackage{latex-sty/articlepagestyle}
+\usepackage{latex-sty/articlesectionstyle}
+
+% Fonts
+\usepackage{amssymb}
+\usepackage[largesmallcaps,partialup]{kpfonts}
+\DeclareSymbolFontAlphabet{\mathrm}{operators} % https://tex.stackexchange.com/questions/40874/kpfonts-siunitx-and-math-alphabets
+\linespread{1.06}
+% \let\mathfrak\undefined
+% \usepackage{eufrak}
+\DeclareMathAlphabet\mathfrak{U}{euf}{m}{n}
+\SetMathAlphabet\mathfrak{bold}{U}{euf}{b}{n}
+% https://tex.stackexchange.com/questions/13815/kpfonts-with-eufrak
+\usepackage{inconsolata}
+
+% Hyperlinks
+\usepackage{hyperref}
+\definecolor{linkcolor}{HTML}{4f4fa3}
+\hypersetup{%
+	pdftitle=\doctitle,
+	pdfauthor=\docauthor,
+	colorlinks,
+	linkcolor=linkcolor,
+	citecolor=linkcolor,
+	urlcolor=linkcolor,
+	bookmarksnumbered=true
+}
+
+% Equation numbering
+\numberwithin{equation}{chapter}
+
+% Footnotes
+\footmarkstyle{\textsuperscript{#1}\hspace{0.25em}}
+
+% Mathematics
+\usepackage{latex-sty/basicmathcommands}
+\usepackage{latex-sty/framedtheorems}
+\usepackage{tikz-cd}
+\tikzcdset{arrow style=math font} % https://tex.stackexchange.com/questions/300352/equalities-look-broken-with-tikz-cd-and-math-font
+\usetikzlibrary{babel}
+
+% Lists
+\usepackage{enumitem}
+\setenumerate[0]{label=\normalfont(\arabic*)}
+
+% Bibliography
+\usepackage[backend=biber, style=authoryear, maxcitenames=2, useprefix]{biblatex}
+\addbibresource{references.bib}
+
+% Title
+\title{\doctitle}
+\author{\docauthor}
+
+\newcommand{\calM}{\mathcal{M}}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calV}{\mathcal{V}}
+\newcommand{\calW}{\mathcal{W}}
+\newcommand{\calU}{\mathcal{U}}
+\newcommand{\calE}{\mathcal{E}}
+\DeclareMathOperator{\sign}{sgn}
+\DeclareMathOperator{\adj}{adj}
+\DeclareMathOperator{\spec}{Spec}
+\DeclareMathOperator{\trace}{tr}
+
+
+\usepackage{listofitems}
+\setsepchar{,}
+
+\makeatletter
+
+\newcommand{\mat@dims}[1]{%
+    \readlist*\@dims{#1}%
+    \ifnum \@dimslen=1
+        \def\@dimsout{\@dims[1]}%
+    \else
+        \def\@dimsout{\@dims[1], \@dims[2]}%
+    \fi
+    \@dimsout
+}
+\makeatother
+
+\newcommand{\matgroup}[3]{\mathrm{#1}_{#2}(#3)}
+\newcommand{\matGL}[2]{\matgroup{GL}{#1}{#2}}
+\newcommand{\trans}{^{\top}}
+% \newcommand{\mat}[2]{\calM_{\mat@dims{#1}}(#2)}
+\newcommand{\mat}[2]{\mathrm{Mat}_{\mat@dims{#1}}(#2)}
+\newcommand{\matO}[1]{\mathrm{O}(#1)}
+\newcommand{\matSO}[1]{\mathrm{SO}(#1)}
+\newcommand{\field}{\mathbb{F}}
+\DeclareMathOperator{\chr}{char}
+
+% Break
+\usepackage{adforn}
+\newcommand\fleuronbreak{\fancybreak{\textcolor{linkcolor}{\adfhangingflatleafleft}}}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+\newcommand{\bin}[2][]{\mathrm{bin}_{#1}(#2)}
+\newcommand{\gray}[2][]{\mathrm{gr}_{#1}(#2)}
+\newcommand{\xor}{\oplus}
+\newcommand{\shiftr}{^{\gg}}
+\newcommand{\conc}{\circ}
+\newcommand{\emptystring}{\lambda}
+
+% TODO: Fix numbering
+
+\begin{document}
+
+\maketitle
+
+\noindent If $a$ and $b$ are binary strings of the same length, we denote the bitwise exclusive disjunction of $a$ and $b$ by $a \xor b$. We denote the concatenation of $a$ with $b$ either by $a \conc b$ or $ab$. Also, if $b$ is a binary string, denote by $b\shiftr$ the right logical shift of $b$, i.e. the string obtained by removing the rightmost bit of $b$ and appending a $0$ on the left of the result.
+
+Let $n \in \naturals$. For a number $k \in \naturals$ with $k < 2^n$ we denote the $n$-bit binary representation of $k$ by $\bin[n]{k}$. Furthermore, we denote the $n$-bit Gray code for $k$ by $\gray[n]{k}$. By definition, $\gray[0]{0} = \emptystring$ and
+%
+\begin{equation*}
+    \gray[n+1]{k}
+        = \begin{cases}
+            0 \conc \gray[n]{k},           & k < 2^n,    \\
+            1 \conc \gray[n]{2^{n+1}-1-k}, & k \geq 2^n.
+        \end{cases}
+\end{equation*}
+%
+for all $n \in \naturals$ and $(n+1)$-bit numbers $k$. We claim the following:
+
+\begin{proposition}
+    Let $n \in \naturals$, and let $k \in \naturals$ be an $n$-bit number. Writing $\bin[n]{k} = b_{n-1} \cdots b_0$ we have $\gray[n]{k} = a_{n-1} \cdots a_0$, where $a_{n-1} = b_{n-1}$ and
+    %
+    \begin{equation}
+        \label{eq:gray-consecutive-bits}
+        a_i
+            = b_{i+1} \xor b_i
+    \end{equation}
+    %
+    for $i \in \{0, \ldots, n-2\}$. That is,
+    %
+    \begin{equation*}
+        \gray[n]{k}
+            = b_{n-1} (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0).
+    \end{equation*}
+    %
+    Conversely we have
+    %
+    \begin{equation*}
+        b_i
+            = a_i \xor \cdots \xor a_{n-1}.
+    \end{equation*}
+\end{proposition}
+%
+The formula \cref{eq:gray-consecutive-bits} also holds in the case $i = n-1$ if we let $b_n = 0$, i.e. we prepend zeros if necessary.
+
+\begin{proof}
+    If $n = 0$, then the claim is obvious since there are no $0$-bit numbers. Now let $k$ be an $(n+1)$-bit number, so that $k < 2^{n+1}$, and write $\bin[n+1]{k} = b_n \cdots b_0$. If $k < 2^n$, then $b_n = 0$ and $\gray[n+1]{k} = 0 \conc \gray[n]{k}$. By induction we have
+    %
+    \begin{align*}
+        \gray[n]{k}
+            &= b_{n-1} (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0) \\
+            &= (b_n \xor b_{n-1}) (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0),
+    \end{align*}
+    %
+    so it follows that
+    %
+    \begin{equation*}
+        \gray[n+1]{k}
+            = b_n \conc \gray[n]{k}
+            = b_n (b_n \xor b_{n-1}) (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0)
+    \end{equation*}
+    %
+    as claimed. If instead $k \geq 2^n$, then $b_n = 1$. Writing $k = 2^n + r$ with $0 \leq r < 2^n$ we have $\bin[n]{r} = b_{n-1} \cdots b_0$. Now notice that $\bin[n]{2^n - 1 - r} = \conj{b}_{n-1} \cdots \conj{b}_0$ since
+    %
+    \begin{equation*}
+        (\conj{b}_{n-1} \cdots \conj{b}_0)_2 + r + 1
+            = (\conj{b}_{n-1} \cdots \conj{b}_0)_2 + (b_{n-1} \cdots b_0)_2 + 1
+            = 2^n.
+    \end{equation*}
+    %
+    By induction we have
+    %
+    \begin{align*}
+        \gray[n]{2^n-1-r}
+            &= \conj{b}_{n-1} (\conj{b}_{n-1} \xor \conj{b}_{n-2}) \cdots (\conj{b}_1 \xor \conj{b}_0) \\
+            &= (b_n \xor b_{n-1}) (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0)
+    \end{align*}
+    %
+    since $b_n = 1$, so it follows that
+    %
+    \begin{align*}
+        \gray[n+1]{k}
+            &= b_n \conc \gray[n]{2^n - 1 - r} \\
+            &= b_n (b_n \xor b_{n-1}) (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0) 
+    \end{align*}
+    %
+    as desired.
+
+    For the final claim, simply notice that
+    %
+    \begin{align*}
+        a_i \xor \cdots \xor a_{n-1}
+            &= (b_i \xor b_{i+1}) \xor (b_{i+1} \xor b_{i+2}) \xor \cdots \xor (b_{n-2} \xor b_{n-1}) \xor b_{n-1} \\
+            &= b_i \xor (b_{i+1} \xor b_{i+1}) \xor (b_{i+2} \xor \cdots \xor b_{n-2}) \xor (b_{n-1} \xor b_{n-1}) \\
+            &= b_i.
+    \end{align*}
+    %
+    Alternatively we may notice that \cref{eq:gray-consecutive-bits} defines a linear system of equations with coefficients in $\ints/2\ints$ and invert this.
+\end{proof}
+
+
+
+\begin{corollary}
+    For $n \in \naturals$ and any $n$-bit number $k$, we have
+    %
+    \begin{equation*}
+        \gray[n]{k}
+            = \bin[n]{k} \xor \bin[n]{k}\shiftr.
+    \end{equation*}
+\end{corollary}
+
+\begin{proof}
+    Writing $\bin[n]{k} = b_{n-1} \cdots b_0$, the proposition implies that
+    %
+    \begin{align*}
+        \gray[n]{k}
+            &= b_{n-1} (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0) \\
+            &= (0 \xor b_{n-1}) (b_{n-1} \xor b_{n-2}) \cdots (b_1 \xor b_0).
+    \end{align*}
+    %
+    But $\bin[n]{k}\shiftr = 0 b_{n-1} \cdots b_1$, so the claim follows.
+\end{proof}
+
+
+\nocite{*}
+
+\printbibliography
+
+\end{document}
